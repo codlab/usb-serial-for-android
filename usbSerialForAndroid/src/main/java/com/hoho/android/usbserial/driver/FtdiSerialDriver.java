@@ -94,6 +94,7 @@ import java.util.Map;
  */
 public class FtdiSerialDriver implements UsbSerialDriver {
 
+    private int _interface_index;
     private final UsbDevice mDevice;
     private final UsbSerialPort mPort;
 
@@ -108,6 +109,17 @@ public class FtdiSerialDriver implements UsbSerialDriver {
         mDevice = device;
         mPort = new FtdiSerialPort(mDevice, 0);
     }
+
+    public void setInterface(int index){
+        try{
+            if(index < mDevice.getInterfaceCount()) {
+                _interface_index = index;
+            }
+        }catch(Exception e){
+
+        }
+    }
+
     @Override
     public UsbDevice getDevice() {
         return mDevice;
@@ -278,7 +290,7 @@ public class FtdiSerialDriver implements UsbSerialDriver {
 
         @Override
         public int read(byte[] dest, int timeoutMillis) throws IOException {
-            final UsbEndpoint endpoint = mDevice.getInterface(0).getEndpoint(0);
+            final UsbEndpoint endpoint = mDevice.getInterface(_interface_index).getEndpoint(0);
 
             if (ENABLE_ASYNC_READS) {
                 final int readAmt;
@@ -326,7 +338,7 @@ public class FtdiSerialDriver implements UsbSerialDriver {
 
         @Override
         public int write(byte[] src, int timeoutMillis) throws IOException {
-            final UsbEndpoint endpoint = mDevice.getInterface(0).getEndpoint(1);
+            final UsbEndpoint endpoint = mDevice.getInterface(_interface_index).getEndpoint(1);
             int offset = 0;
 
             while (offset < src.length) {
@@ -573,6 +585,7 @@ public class FtdiSerialDriver implements UsbSerialDriver {
         supportedDevices.put(Integer.valueOf(UsbId.VENDOR_FTDI),
                 new int[] {
                     UsbId.FTDI_FT232R,
+                    UsbId.FTDI_FT232,
                     UsbId.FTDI_FT231X,
                 });
         return supportedDevices;
